@@ -133,30 +133,17 @@
         }
 
         .songlist-table tbody {
-            display: block; /* Required for height/overflow to work on tbody */
+            /* No fixed height - table grows naturally */
             width: 100%;
             max-width: 900px;
-            height: calc(100vh - 450px); /* Fixed height: viewport minus header/filters/search */
-            overflow-y: auto; /* Internal scrolling */
-            overflow-x: hidden;
-            overscroll-behavior: none; /* Prevent bounce effect at scroll boundaries */
-            -webkit-overscroll-behavior: none; /* Android Chrome */
-            touch-action: pan-y; /* Allow vertical scroll only */
-            will-change: scroll-position; /* Performance hint */
-            transform: translateZ(0); /* Force GPU acceleration */
-            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
         }
 
-        .songlist-table thead {
-            display: table; /* Keep header as table */
-            width: 100%;
-            table-layout: fixed;
+        .songlist-table thead,
+        .songlist-table tbody {
+            display: table-row-group; /* Normal table display */
         }
 
         .songlist-table tbody tr {
-            display: table; /* Make rows behave like table */
-            width: 100%;
-            table-layout: fixed;
             background-color: transparent !important; /* No row backgrounds */
         }
         
@@ -181,10 +168,6 @@
             .songlist-table {
                 width: 100%;
                 table-layout: fixed;
-            }
-
-            .songlist-table tbody {
-                height: calc(100vh - 400px); /* Adjust for mobile: viewport minus header/filters/search */
             }
         }
 
@@ -820,83 +803,6 @@
             currentSearchTerm = this.value;
             renderSongs();
         });
-
-        // Scroll chaining: Allow page scroll when tbody reaches top
-        const tbody = document.getElementById('songBody');
-        let lastScrollTop = 0;
-        
-        tbody.addEventListener('scroll', function(e) {
-            const currentScrollTop = this.scrollTop;
-            const scrollingUp = currentScrollTop < lastScrollTop;
-            
-            // If scrolling up and at the top of tbody, allow page scroll
-            if (scrollingUp && currentScrollTop === 0) {
-                // Don't prevent default - allow scroll to chain to page
-                return;
-            }
-            
-            lastScrollTop = currentScrollTop;
-        }, { passive: true });
-        
-        // Simple scroll chaining: allow page scroll when tbody reaches top
-        let touchStartY = 0;
-        let touchStartTime = 0;
-        let lastTouchY = 0;
-        let velocity = 0;
-        
-        tbody.addEventListener('touchstart', function(e) {
-            touchStartY = e.touches[0].clientY;
-            lastTouchY = touchStartY;
-            touchStartTime = Date.now();
-            velocity = 0;
-        }, { passive: true });
-        
-        tbody.addEventListener('touchmove', function(e) {
-            const touchY = e.touches[0].clientY;
-            const touchDelta = touchY - lastTouchY;
-            const timeDelta = Date.now() - touchStartTime;
-            
-            // Calculate velocity
-            if (timeDelta > 0) {
-                velocity = touchDelta / timeDelta;
-            }
-            
-            const scrollingUp = touchDelta > 0;
-            
-            // If at top of tbody and trying to scroll up, manually scroll the page
-            if (this.scrollTop === 0 && scrollingUp) {
-                // Prevent tbody from handling this scroll
-                e.preventDefault();
-                // Manually scroll the page
-                window.scrollBy(0, -touchDelta); // Match tbody scroll speed
-            }
-            
-            lastTouchY = touchY;
-        }, { passive: false });
-        
-        tbody.addEventListener('touchend', function(e) {
-            // If we had upward velocity at the top, continue scrolling the page
-            if (this.scrollTop === 0 && velocity > 0.5) {
-                // Smooth momentum scroll on the page
-                let momentum = velocity * 500;
-                const startScroll = window.pageYOffset;
-                const startTime = Date.now();
-                
-                function momentumScroll() {
-                    const elapsed = Date.now() - startTime;
-                    const progress = Math.min(elapsed / 300, 1); // 300ms duration
-                    const easeOut = 1 - Math.pow(1 - progress, 3);
-                    
-                    window.scrollTo(0, startScroll - (momentum * easeOut));
-                    
-                    if (progress < 1 && window.pageYOffset > 0) {
-                        requestAnimationFrame(momentumScroll);
-                    }
-                }
-                
-                requestAnimationFrame(momentumScroll);
-            }
-        }, { passive: true });
 
         // Custom notification function (replaces alert to avoid domain prefix)
         function showNotification(message, duration = 3000) {
