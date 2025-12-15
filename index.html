@@ -98,11 +98,11 @@
 
         /* Error message row - hidden by default */
         .error-message {
-            display: none;
+            display: none !important;
         }
 
         .error-message.show {
-            display: table-row;
+            display: table !important; /* Match tbody tr display */
         }
 
         .notify-btn {
@@ -133,16 +133,31 @@
         }
 
         .songlist-table tbody {
+            display: block; /* Required for height/overflow to work on tbody */
             width: 100%;
             max-width: 900px;
+            height: calc(100vh - 450px); /* Fixed height: viewport minus header/filters/search */
+            overflow-y: auto; /* Internal scrolling */
+            overflow-x: hidden;
+        }
+
+        .songlist-table thead {
+            display: table; /* Keep header as table */
+            width: 100%;
             table-layout: fixed;
-            margin: 0 auto; /* Center the table */
+        }
+
+        .songlist-table tbody tr {
+            display: table; /* Make rows behave like table */
+            width: 100%;
+            table-layout: fixed;
         }
 
         /* Mobile optimization - ensure table fits in viewport */
         @media (max-width: 768px) {
             body {
                 overflow-x: hidden;
+                overflow-y: hidden; /* Prevent page scroll on mobile */
             }
             
             .songlist-wrapper {
@@ -155,8 +170,10 @@
                 width: 100%;
                 table-layout: fixed;
             }
-            
-            /* No padding needed - no sticky positioning */
+
+            .songlist-table tbody {
+                height: calc(100vh - 400px); /* Adjust for mobile: viewport minus header/filters/search */
+            }
         }
 
         .songlist-table th,
