@@ -736,10 +736,10 @@
         searchInput.addEventListener('focus', function() {
             // Wait for browser's default scroll-into-view to complete
             setTimeout(() => {
-                // Scroll up an additional 100px to show more table
+                // Scroll down 50px to move input higher on screen and show more table
                 const currentScroll = window.pageYOffset;
                 window.scrollTo({
-                    top: currentScroll - 100,
+                    top: currentScroll + 50,
                     behavior: 'smooth'
                 });
             }, 400); // Wait for keyboard animation
