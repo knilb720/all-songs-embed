@@ -1,89 +1,233 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>All Songs List</title>
-<style>
-  body {
-    font-family: sans-serif;
-    padding: 20px;
-    margin: 0;
-    background: #fff;
-    color: #000;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Songs List</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    max-width: 700px;
-    margin: 0 auto;
-  }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #ffffff;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-  th {
-    text-align: left;
-    font-weight: bold;
-    padding: 12px 8px;
-    border-bottom: 2px solid #ddd;
-  }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+            color: #333;
+        }
 
-  td {
-    padding: 12px 8px;
-  }
+        /* Filter buttons container */
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
 
-  a.button {
-    padding: 4px 8px;
-    border: 1px solid #000;
-    border-radius: 6px;
-    text-decoration: none;
-    color: #000;
-  }
+        /* Filter button styling - larger version of Request button, black and white */
+        .filter-btn {
+            background-color: #ffffff;
+            color: #000000;
+            border: 2px solid #000000;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-  a.button:active {
-    background: #ddd;
-  }
+        .filter-btn.active {
+            background-color: #000000;
+            color: #ffffff;
+        }
 
-  @media (max-width: 600px) {
-    td, th { padding: 8px 4px; }
-  }
-</style>
+        /* Song table wrapper */
+        .songlist-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        /* Song table styling */
+        .songlist-table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .songlist-table th,
+        .songlist-table td {
+            text-align: left;
+            padding: 12px 15px;
+            font-size: 16px;
+        }
+
+        .songlist-table th {
+            font-weight: bold;
+            border-bottom: 2px solid #ddd;
+            background-color: #f9f9f9;
+        }
+
+        .songlist-table tr:not(:first-child) td {
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Request button styling - matches original (black and white) */
+        .request-btn {
+            background-color: #ffffff;
+            color: #000000;
+            border: 2px solid #000000;
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .filter-btn {
+                padding: 12px 24px;
+                font-size: 14px;
+            }
+
+            .songlist-table th,
+            .songlist-table td {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
 </head>
 <body>
+    <h1>All Songs List</h1>
 
-<table id="songs-table">
-  <thead>
-    <tr>
-      <th>Song Title</th>
-      <th>Artist / Show</th>
-      <th></th> <!-- No header for Request -->
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Tiny Dancer</td>
-      <td>Elton John</td>
-      <td><a class="button" href="https://venmo.com/patrickTSG?txn=pay&amount=5&note=Tiny-Dancer-Elton-John">Request</a></td>
-    </tr>
-    <tr>
-      <td>Defying Gravity</td>
-      <td>Wicked</td>
-      <td><a class="button" href="https://venmo.com/patrickTSG?txn=pay&amount=5&note=Defying-Gravity-Wicked">Request</a></td>
-    </tr>
-    <tr>
-      <td>Shallow</td>
-      <td>Lady Gaga</td>
-      <td><a class="button" href="https://venmo.com/patrickTSG?txn=pay&amount=5&note=Shallow-Lady-Gaga">Request</a></td>
-    </tr>
-  </tbody>
-</table>
+    <!-- Filter Buttons -->
+    <div class="filter-buttons">
+        <button class="filter-btn active" data-filter="all">All Songs</button>
+        <button class="filter-btn" data-filter="Musicals">Musicals</button>
+        <button class="filter-btn" data-filter="Classic Piano Bar Tunes">Classic Piano Bar Tunes</button>
+        <button class="filter-btn" data-filter="Disney">Disney</button>
+        <button class="filter-btn" data-filter="2000-Present">2000-Present</button>
+        <button class="filter-btn" data-filter="90's">90's</button>
+        <button class="filter-btn" data-filter="60's-80's">60's-80's</button>
+        <button class="filter-btn" data-filter="Jazz">Jazz</button>
+        <button class="filter-btn" data-filter="Holiday">Holiday</button>
+    </div>
 
-<script>
-// Auto-sort songs by title
-const tableBody = document.getElementById("songs-table").tBodies[0];
-[...tableBody.rows]
-  .sort((a,b) => a.cells[0].textContent.localeCompare(b.cells[0]))
-  .forEach(row => tableBody.appendChild(row));
-</script>
+    <!-- Song Table -->
+    <div class="songlist-wrapper">
+        <table class="songlist-table" id="songTable">
+            <thead>
+                <tr>
+                    <th>Song Title</th>
+                    <th>Artist / Show</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="songBody">
+                <!-- Songs will be loaded here via JavaScript -->
+            </tbody>
+        </table>
+    </div>
 
+    <script>
+        let allSongs = [];
+        let currentFilter = 'all';
+
+        // Load songs from JSON
+        async function loadSongs() {
+            try {
+                const response = await fetch('songs.json');
+                allSongs = await response.json();
+                renderSongs();
+            } catch (error) {
+                console.error('Error loading songs:', error);
+                document.getElementById('songBody').innerHTML = 
+                    '<tr><td colspan="3" style="text-align: center; padding: 20px;">Error loading songs. Please try again later.</td></tr>';
+            }
+        }
+
+        // Render songs based on current filter
+        function renderSongs() {
+            const tbody = document.getElementById('songBody');
+            tbody.innerHTML = '';
+
+            // Filter songs
+            let filteredSongs = allSongs;
+            if (currentFilter !== 'all') {
+                filteredSongs = allSongs.filter(song => 
+                    song.tags && song.tags.includes(currentFilter)
+                );
+            }
+
+            // Sort alphabetically by title
+            filteredSongs.sort((a, b) => 
+                a.title.toLowerCase().localeCompare(b.title.toLowerCase())
+            );
+
+            // Render songs
+            filteredSongs.forEach(song => {
+                const row = document.createElement('tr');
+                
+                const titleCell = document.createElement('td');
+                titleCell.textContent = song.title;
+                
+                const artistCell = document.createElement('td');
+                artistCell.textContent = song.artist;
+                
+                const requestCell = document.createElement('td');
+                const requestLink = document.createElement('a');
+                requestLink.href = `venmo://paycharge?txn=pay&recipients=patrickTSG&amount=5&note=Song Request: ${encodeURIComponent(song.title + ' - ' + song.artist)}`;
+                requestLink.className = 'request-btn';
+                requestLink.textContent = 'Request';
+                requestCell.appendChild(requestLink);
+                
+                row.appendChild(titleCell);
+                row.appendChild(artistCell);
+                row.appendChild(requestCell);
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Filter button click handlers
+        document.querySelectorAll('.filter-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active state
+                document.querySelectorAll('.filter-btn').forEach(btn => 
+                    btn.classList.remove('active')
+                );
+                this.classList.add('active');
+
+                // Update filter and re-render
+                currentFilter = this.getAttribute('data-filter');
+                renderSongs();
+            });
+        });
+
+        // Load songs on page load
+        loadSongs();
+    </script>
 </body>
 </html>
