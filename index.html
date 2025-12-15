@@ -33,7 +33,7 @@
             flex-wrap: wrap;
             gap: 12px;
             justify-content: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             padding: 20px 0;
         }
 
@@ -54,6 +54,78 @@
         .filter-btn.active {
             background-color: #ffffff;
             color: #000000;
+        }
+
+        /* Search container */
+        .search-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            padding: 0 10px;
+        }
+
+        .search-input {
+            flex: 1;
+            max-width: 500px;
+            padding: 12px 20px;
+            font-size: 16px;
+            background-color: #000000;
+            color: #ffffff;
+            border: 2px solid #ffffff;
+            border-radius: 8px;
+            font-family: inherit;
+        }
+
+        .search-input::placeholder {
+            color: #888888;
+        }
+
+        .search-btn {
+            background-color: #ffffff;
+            color: #000000;
+            border: 2px solid #ffffff;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        /* Error message */
+        .error-message {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #1a1a1a;
+            border: 2px solid #ffffff;
+            border-radius: 8px;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .error-message p {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .notify-btn {
+            background-color: #ffffff;
+            color: #000000;
+            border: 2px solid #ffffff;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         /* Song table wrapper */
@@ -121,6 +193,11 @@
             white-space: nowrap;
         }
 
+        /* Highlight search results */
+        .highlight {
+            background-color: #333333;
+        }
+
         /* Responsive design */
         @media (max-width: 768px) {
             body {
@@ -135,11 +212,31 @@
             .filter-buttons {
                 gap: 10px;
                 padding: 15px 0;
+                margin-bottom: 15px;
             }
 
             .filter-btn {
                 padding: 10px 16px;
                 font-size: 12px;
+            }
+
+            .search-container {
+                flex-direction: column;
+                margin-bottom: 20px;
+            }
+
+            .search-input {
+                max-width: 100%;
+                font-size: 16px;
+            }
+
+            .search-btn {
+                width: 100%;
+                padding: 12px 20px;
+            }
+
+            .error-message p {
+                font-size: 14px;
             }
 
             .songlist-table th,
@@ -187,6 +284,18 @@
         <button class="filter-btn" data-filter="Holiday">Holiday</button>
     </div>
 
+    <!-- Search Bar -->
+    <div class="search-container">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search for song">
+        <button class="search-btn" id="searchBtn">Search</button>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" id="errorMessage">
+        <p id="errorText">Oops! Looks like Pat doesn't know "<span id="searchTerm"></span>"</p>
+        <button class="notify-btn" id="notifyBtn">Click to tell him to learn it!</button>
+    </div>
+
     <!-- Song Table -->
     <div class="songlist-wrapper">
         <table class="songlist-table" id="songTable">
@@ -206,6 +315,124 @@
     <script>
         let allSongs = [];
         let currentFilter = 'all';
+        let currentSearchTerm = '';
+
+        // Levenshtein Distance - measures similarity between two strings
+        function levenshteinDistance(str1, str2) {
+            const len1 = str1.length;
+            const len2 = str2.length;
+            const matrix = [];
+
+            for (let i = 0; i <= len1; i++) {
+                matrix[i] = [i];
+            }
+
+            for (let j = 0; j <= len2; j++) {
+                matrix[0][j] = j;
+            }
+
+            for (let i = 1; i <= len1; i++) {
+                for (let j = 1; j <= len2; j++) {
+                    if (str1.charAt(i - 1) === str2.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+
+            return matrix[len1][len2];
+        }
+
+        // Fuzzy search with incredible leniency
+        function fuzzySearch(searchTerm, songs) {
+            if (!searchTerm || searchTerm.trim() === '') {
+                return songs;
+            }
+
+            const term = searchTerm.toLowerCase().trim();
+            const results = [];
+
+            songs.forEach(song => {
+                const title = song.title.toLowerCase();
+                const artist = song.artist.toLowerCase();
+                
+                // Calculate similarity scores
+                let bestScore = Infinity;
+                let matchType = '';
+
+                // Exact substring match (highest priority)
+                if (title.includes(term) || artist.includes(term)) {
+                    bestScore = 0;
+                    matchType = 'exact';
+                }
+                // Partial word match
+                else {
+                    const titleWords = title.split(/\s+/);
+                    const artistWords = artist.split(/\s+/);
+                    const searchWords = term.split(/\s+/);
+
+                    searchWords.forEach(searchWord => {
+                        // Check title words
+                        titleWords.forEach(titleWord => {
+                            if (titleWord.includes(searchWord) || searchWord.includes(titleWord)) {
+                                bestScore = Math.min(bestScore, 1);
+                                matchType = 'partial';
+                            } else {
+                                const distance = levenshteinDistance(searchWord, titleWord);
+                                const maxLen = Math.max(searchWord.length, titleWord.length);
+                                const similarity = 1 - (distance / maxLen);
+                                
+                                // Very lenient threshold - 70% similarity
+                                if (similarity >= 0.7) {
+                                    bestScore = Math.min(bestScore, distance);
+                                    matchType = 'fuzzy';
+                                }
+                            }
+                        });
+
+                        // Check artist words
+                        artistWords.forEach(artistWord => {
+                            if (artistWord.includes(searchWord) || searchWord.includes(artistWord)) {
+                                bestScore = Math.min(bestScore, 1);
+                                matchType = 'partial';
+                            } else {
+                                const distance = levenshteinDistance(searchWord, artistWord);
+                                const maxLen = Math.max(searchWord.length, artistWord.length);
+                                const similarity = 1 - (distance / maxLen);
+                                
+                                if (similarity >= 0.7) {
+                                    bestScore = Math.min(bestScore, distance);
+                                    matchType = 'fuzzy';
+                                }
+                            }
+                        });
+                    });
+                }
+
+                // If we found a match, add to results
+                if (bestScore < Infinity) {
+                    results.push({
+                        song: song,
+                        score: bestScore,
+                        matchType: matchType
+                    });
+                }
+            });
+
+            // Sort by score (lower is better)
+            results.sort((a, b) => {
+                if (a.matchType === 'exact' && b.matchType !== 'exact') return -1;
+                if (a.matchType !== 'exact' && b.matchType === 'exact') return 1;
+                return a.score - b.score;
+            });
+
+            return results.map(r => r.song);
+        }
 
         // Load songs from JSON
         async function loadSongs() {
@@ -220,17 +447,31 @@
             }
         }
 
-        // Render songs based on current filter
+        // Render songs based on current filter and search
         function renderSongs() {
             const tbody = document.getElementById('songBody');
+            const errorMessage = document.getElementById('errorMessage');
             tbody.innerHTML = '';
 
-            // Filter songs
+            // Filter by category first
             let filteredSongs = allSongs;
             if (currentFilter !== 'all') {
                 filteredSongs = allSongs.filter(song => 
                     song.tags && song.tags.includes(currentFilter)
                 );
+            }
+
+            // Apply search if there's a search term
+            if (currentSearchTerm) {
+                filteredSongs = fuzzySearch(currentSearchTerm, filteredSongs);
+            }
+
+            // Show error if no results
+            if (currentSearchTerm && filteredSongs.length === 0) {
+                errorMessage.classList.add('show');
+                document.getElementById('searchTerm').textContent = currentSearchTerm;
+            } else {
+                errorMessage.classList.remove('show');
             }
 
             // Sort alphabetically by title
@@ -263,6 +504,28 @@
             });
         }
 
+        // Search button click handler
+        document.getElementById('searchBtn').addEventListener('click', function() {
+            currentSearchTerm = document.getElementById('searchInput').value;
+            renderSongs();
+        });
+
+        // Enter key in search input
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                currentSearchTerm = this.value;
+                renderSongs();
+            }
+        });
+
+        // Clear search when input is cleared
+        document.getElementById('searchInput').addEventListener('input', function() {
+            if (this.value === '') {
+                currentSearchTerm = '';
+                renderSongs();
+            }
+        });
+
         // Filter button click handlers
         document.querySelectorAll('.filter-btn').forEach(button => {
             button.addEventListener('click', function() {
@@ -276,6 +539,21 @@
                 currentFilter = this.getAttribute('data-filter');
                 renderSongs();
             });
+        });
+
+        // Notify button - PLACEHOLDER FOR EMAILJS
+        document.getElementById('notifyBtn').addEventListener('click', function() {
+            const searchTerm = document.getElementById('searchTerm').textContent;
+            
+            // TODO: Replace this with EmailJS integration
+            // For now, show alert
+            alert('EmailJS will send: "Someone requested "' + searchTerm + '" at TSG and you don\'t know it! Shame! Learn it!" to pdboyla1@gmail.com');
+            
+            // EMAILJS CODE WILL GO HERE:
+            // emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
+            //     song_request: searchTerm,
+            //     to_email: 'pdboyla1@gmail.com'
+            // });
         });
 
         // Load songs on page load
