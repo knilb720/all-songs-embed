@@ -312,14 +312,16 @@
             transform: translate(-50%, -50%);
             background-color: #ffffff;
             color: #000000;
-            padding: 20px 30px;
+            padding: 25px 40px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             z-index: 10000;
             text-align: center;
             font-size: 16px;
             font-weight: 500;
-            max-width: 90%;
+            min-width: 280px;
+            max-width: 85%;
+            line-height: 1.5;
             animation: fadeIn 0.3s ease-in-out;
         }
 
@@ -731,25 +733,28 @@
         searchInput.addEventListener('focus', function() {
             // Only auto-scroll on mobile (screen width < 768px)
             if (window.innerWidth < 768 && !isSearchActive) {
-                // Android-compatible auto-scroll with multiple fallback methods
+                // Android requires instant scroll (not smooth) and longer delay
                 setTimeout(() => {
-                    // Method 1: scrollIntoView (works on most browsers)
-                    searchContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Get absolute position of search container
+                    const rect = searchContainer.getBoundingClientRect();
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const targetPosition = rect.top + scrollTop - 10; // 10px from top
                     
-                    // Method 2: Direct window.scrollTo (Android fallback)
-                    setTimeout(() => {
-                        const rect = searchContainer.getBoundingClientRect();
-                        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                        const targetPosition = rect.top + scrollTop - 10; // 10px from top
-                        window.scrollTo({ top: targetPosition, behavior: 'smooth' });
-                    }, 50);
+                    // Use instant scroll for Android (behavior: 'auto' or omit behavior)
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'auto' // Instant scroll works better on Android
+                    });
+                    
+                    // Also try scrollIntoView as backup
+                    searchContainer.scrollIntoView({ behavior: 'auto', block: 'start' });
                     
                     // Lock scroll position after scrolling
                     setTimeout(() => {
                         isSearchActive = true;
                         scrollPosition = window.pageYOffset;
-                    }, 400); // Wait for smooth scroll to complete
-                }, 150); // Longer delay for Android keyboard animation
+                    }, 100);
+                }, 300); // Longer delay for Android keyboard animation (300ms)
             }
         });
 
