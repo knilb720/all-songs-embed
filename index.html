@@ -590,26 +590,60 @@
         
         // Handle touch events for smooth scroll chaining on mobile
         let touchStartY = 0;
-        let tbodyScrollTop = 0;
+        let touchStartTime = 0;
+        let lastTouchY = 0;
+        let velocity = 0;
         
         tbody.addEventListener('touchstart', function(e) {
             touchStartY = e.touches[0].clientY;
-            tbodyScrollTop = this.scrollTop;
+            lastTouchY = touchStartY;
+            touchStartTime = Date.now();
+            velocity = 0;
         }, { passive: true });
         
         tbody.addEventListener('touchmove', function(e) {
             const touchY = e.touches[0].clientY;
-            const touchDelta = touchY - touchStartY;
-            const scrollingUp = touchDelta > 0;
+            const touchDelta = touchY - lastTouchY;
+            const timeDelta = Date.now() - touchStartTime;
             
-            // If at top of tbody and trying to scroll up, allow page scroll
-            if (this.scrollTop === 0 && scrollingUp) {
-                // Don't prevent - allow scroll to chain to page
-                return;
+            // Calculate velocity
+            if (timeDelta > 0) {
+                velocity = touchDelta / timeDelta;
             }
             
-            // Otherwise, allow normal tbody scrolling (don't prevent)
-            // The tbody will handle its own scrolling naturally
+            // If at top of tbody and trying to scroll up, manually scroll the page
+            if (this.scrollTop === 0 && touchDelta > 0) {
+                // Prevent tbody from handling this scroll
+                e.preventDefault();
+                // Manually scroll the page
+                window.scrollBy(0, -touchDelta * 2); // Amplify for smooth feel
+            }
+            
+            lastTouchY = touchY;
+        }, { passive: false });
+        
+        tbody.addEventListener('touchend', function(e) {
+            // If we had upward velocity at the top, continue scrolling the page
+            if (this.scrollTop === 0 && velocity > 0.5) {
+                // Smooth momentum scroll on the page
+                let momentum = velocity * 500;
+                const startScroll = window.pageYOffset;
+                const startTime = Date.now();
+                
+                function momentumScroll() {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / 300, 1); // 300ms duration
+                    const easeOut = 1 - Math.pow(1 - progress, 3);
+                    
+                    window.scrollTo(0, startScroll - (momentum * easeOut));
+                    
+                    if (progress < 1 && window.pageYOffset > 0) {
+                        requestAnimationFrame(momentumScroll);
+                    }
+                }
+                
+                requestAnimationFrame(momentumScroll);
+            }
         }, { passive: true });
 
         // Filter button click handlers
