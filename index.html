@@ -303,6 +303,51 @@
                 font-size: 12px;
             }
         }
+
+        /* Custom notification toast (replaces alert) */
+        .custom-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            color: #000000;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 500;
+            max-width: 90%;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+        }
+
+        .custom-notification.fade-out {
+            animation: fadeOut 0.3s ease-in-out;
+        }
     </style>
 </head>
 <body>
@@ -686,15 +731,25 @@
         searchInput.addEventListener('focus', function() {
             // Only auto-scroll on mobile (screen width < 768px)
             if (window.innerWidth < 768 && !isSearchActive) {
-                // Smooth scroll to bring search bar to top of viewport
+                // Android-compatible auto-scroll with multiple fallback methods
                 setTimeout(() => {
+                    // Method 1: scrollIntoView (works on most browsers)
                     searchContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                    // Method 2: Direct window.scrollTo (Android fallback)
+                    setTimeout(() => {
+                        const rect = searchContainer.getBoundingClientRect();
+                        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                        const targetPosition = rect.top + scrollTop - 10; // 10px from top
+                        window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+                    }, 50);
+                    
                     // Lock scroll position after scrolling
                     setTimeout(() => {
                         isSearchActive = true;
                         scrollPosition = window.pageYOffset;
                     }, 400); // Wait for smooth scroll to complete
-                }, 100); // Small delay to let keyboard animation start
+                }, 150); // Longer delay for Android keyboard animation
             }
         });
 
@@ -812,6 +867,25 @@
             });
         });
 
+        // Custom notification function (replaces alert to avoid domain prefix)
+        function showNotification(message, duration = 3000) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = 'custom-notification';
+            notification.textContent = message;
+            
+            // Add to body
+            document.body.appendChild(notification);
+            
+            // Auto-remove after duration
+            setTimeout(() => {
+                notification.classList.add('fade-out');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300); // Match fadeOut animation duration
+            }, duration);
+        }
+
         // Notify button - EmailJS Integration
         document.getElementById('notifyBtn').addEventListener('click', function() {
             const searchTerm = document.getElementById('searchTerm').textContent;
@@ -821,11 +895,11 @@
                 song_request: searchTerm
             }).then(
                 function(response) {
-                    alert('Thanks! Pat has been notified to learn "' + searchTerm + '"!');
+                    showNotification('Thanks! Pat has been notified to learn "' + searchTerm + '"!');
                     console.log('Email sent successfully!', response.status, response.text);
                 },
                 function(error) {
-                    alert('Oops! Something went wrong. Please try again.');
+                    showNotification('Oops! Something went wrong. Please try again.');
                     console.log('Email failed to send:', error);
                 }
             );
