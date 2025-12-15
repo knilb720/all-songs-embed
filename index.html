@@ -70,11 +70,14 @@
             justify-content: center;
             margin-bottom: 30px;
             padding: 0 10px;
-            transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+            position: relative;
+            transition: transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1),
+                        padding 0.25s cubic-bezier(0.25, 0.1, 0.25, 1),
+                        box-shadow 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
         }
 
         /* Sticky search when focused on mobile */
-        .search-container.sticky {
+        body.search-active .search-container {
             position: fixed;
             top: 3px;
             left: 0;
@@ -170,6 +173,18 @@
         .search-active .songlist-table th {
             background-color: #000000;
             border-top: 1px solid #333333;
+        }
+
+        /* Prevent tbody content from scrolling behind sticky header */
+        .search-active .songlist-table tbody {
+            display: block;
+        }
+
+        .search-active .songlist-table thead,
+        .search-active .songlist-table tbody tr {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
         }
 
         .songlist-table tr:not(:first-child) td {
@@ -514,17 +529,18 @@
         searchInput.addEventListener('focus', function() {
             // Only apply sticky on mobile (screen width < 768px)
             if (window.innerWidth < 768) {
-                searchContainer.classList.add('sticky');
-                document.body.classList.add('search-active');
-                // Hide filter buttons when search is active
-                document.querySelector('.filter-buttons').style.display = 'none';
-                document.querySelector('h1').style.display = 'none';
+                // Use requestAnimationFrame to ensure smooth animation
+                requestAnimationFrame(() => {
+                    document.body.classList.add('search-active');
+                    // Hide filter buttons when search is active
+                    document.querySelector('.filter-buttons').style.display = 'none';
+                    document.querySelector('h1').style.display = 'none';
+                });
             }
         });
         
         searchInput.addEventListener('blur', function() {
             // Remove sticky when not focused
-            searchContainer.classList.remove('sticky');
             document.body.classList.remove('search-active');
             // Show filter buttons again
             document.querySelector('.filter-buttons').style.display = 'flex';
