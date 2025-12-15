@@ -730,102 +730,12 @@
             });
         }
 
-        // Track if search is active to prevent unwanted scrolling
-        let isSearchActive = false;
-        let scrollPosition = 0;
-
-        // Auto-scroll search bar to top when focused on mobile
         const searchInput = document.getElementById('searchInput');
-        const searchContainer = document.querySelector('.search-container');
-        
-        searchInput.addEventListener('focus', function() {
-            console.log('🔍 FOCUS EVENT FIRED');
-            console.log('Window width:', window.innerWidth);
-            console.log('isSearchActive:', isSearchActive);
-            console.log('Current scroll position:', window.pageYOffset);
-            
-            // Only auto-scroll on mobile (screen width < 768px)
-            if (window.innerWidth < 768 && !isSearchActive) {
-                console.log('✅ Conditions met - starting auto-scroll');
-                
-                // Set scroll position to 0 FIRST to prevent restoration from fighting us
-                scrollPosition = 0;
-                isSearchActive = true;
-                
-                // Simple approach: scroll to top of page
-                const scrollToTop = (attempt) => {
-                    const beforeScroll = window.pageYOffset;
-                    console.log(`📍 Scroll attempt ${attempt} - Before: ${beforeScroll}`);
-                    
-                    // Force scroll to top using all available methods
-                    window.scrollTo(0, 0);
-                    document.documentElement.scrollTop = 0;
-                    document.body.scrollTop = 0;
-                    window.scroll(0, 0);
-                    
-                    // Update our tracking variable
-                    scrollPosition = 0;
-                    
-                    setTimeout(() => {
-                        const afterScroll = window.pageYOffset;
-                        console.log(`📍 Scroll attempt ${attempt} - After: ${afterScroll}`);
-                        if (afterScroll !== 0) {
-                            console.warn(`⚠️ Scroll failed! Still at ${afterScroll}`);
-                        }
-                    }, 10);
-                };
-                
-                // Use requestAnimationFrame for better timing with browser rendering
-                let attemptNum = 0;
-                
-                // Early attempts (before browser's scroll-into-view)
-                requestAnimationFrame(() => {
-                    scrollToTop(attemptNum++);
-                    requestAnimationFrame(() => scrollToTop(attemptNum++));
-                });
-                
-                // Mid attempts (during keyboard animation)
-                setTimeout(() => requestAnimationFrame(() => scrollToTop(attemptNum++)), 100);
-                setTimeout(() => requestAnimationFrame(() => scrollToTop(attemptNum++)), 200);
-                setTimeout(() => requestAnimationFrame(() => scrollToTop(attemptNum++)), 300);
-                
-                // CRITICAL: Late attempts AFTER browser's scroll-into-view completes
-                // Browser typically scrolls input into view around 300-600ms
-                // So we scroll AFTER that to override it
-                setTimeout(() => requestAnimationFrame(() => scrollToTop(attemptNum++)), 600);
-                setTimeout(() => requestAnimationFrame(() => scrollToTop(attemptNum++)), 700);
-                setTimeout(() => requestAnimationFrame(() => scrollToTop(attemptNum++)), 800);
-                setTimeout(() => requestAnimationFrame(() => scrollToTop(attemptNum++)), 900);
-                setTimeout(() => requestAnimationFrame(() => scrollToTop(attemptNum++)), 1000);
-                setTimeout(() => requestAnimationFrame(() => scrollToTop(attemptNum++)), 1200);
-                setTimeout(() => requestAnimationFrame(() => scrollToTop(attemptNum++)), 1500);
-            } else {
-                console.log('❌ Conditions NOT met - skipping auto-scroll');
-                if (window.innerWidth >= 768) console.log('  - Window too wide');
-                if (isSearchActive) console.log('  - Search already active');
-            }
-        });
 
-        searchInput.addEventListener('blur', function() {
-            // Reset when keyboard closes
-            isSearchActive = false;
-        });
-
-        // Live search - filter as user types WITHOUT scrolling
+        // Live search - filter as user types
         searchInput.addEventListener('input', function() {
             currentSearchTerm = this.value;
-            
-            // Save current scroll position before rendering
-            if (isSearchActive) {
-                scrollPosition = window.pageYOffset;
-            }
-            
             renderSongs();
-            
-            // Restore scroll position after rendering to prevent movement
-            if (isSearchActive) {
-                window.scrollTo(0, scrollPosition);
-            }
         });
 
         // Scroll chaining: Allow page scroll when tbody reaches top
