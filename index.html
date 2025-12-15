@@ -734,11 +734,23 @@
 
         // Add extra scroll on focus to show more of the table
         searchInput.addEventListener('focus', function() {
+            // Detect iOS vs Android
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const isAndroid = /Android/.test(navigator.userAgent);
+            
+            // Platform-specific offsets
+            let scrollOffset = 150; // Default
+            if (isIOS) {
+                scrollOffset = 125;
+            } else if (isAndroid) {
+                scrollOffset = 200;
+            }
+            
             // Wait for browser's scroll-into-view, then adjust
             setTimeout(() => {
                 const currentScroll = window.pageYOffset;
                 window.scrollTo({
-                    top: currentScroll + 150,
+                    top: currentScroll + scrollOffset,
                     behavior: 'smooth'
                 });
             }, 200); // 200ms delay
