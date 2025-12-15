@@ -738,12 +738,16 @@
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             const isAndroid = /Android/.test(navigator.userAgent);
             
-            // Platform-specific offsets
+            // Platform-specific offsets and delays
             let scrollOffset = 150; // Default
+            let delay = 200; // Default
+            
             if (isIOS) {
                 scrollOffset = 125;
+                delay = 200;
             } else if (isAndroid) {
                 scrollOffset = 300;
+                delay = 400; // Android needs more time for keyboard animation
             }
             
             // Wait for browser's scroll-into-view, then adjust
@@ -753,7 +757,7 @@
                     top: currentScroll + scrollOffset,
                     behavior: 'smooth'
                 });
-            }, 200); // 200ms delay
+            }, delay);
         });
 
         // Live search - filter as user types
