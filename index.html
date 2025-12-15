@@ -96,19 +96,13 @@
             color: #888888;
         }
 
-        /* Error message */
+        /* Error message row - hidden by default */
         .error-message {
             display: none;
-            background-color: #1a1a1a;
         }
 
         .error-message.show {
             display: table-row;
-        }
-
-        .error-message td {
-            border-top: 2px solid #333333;
-            border-bottom: 2px solid #333333;
         }
 
         .notify-btn {
@@ -136,6 +130,9 @@
         /* Song table styling - dark mode */
         .songlist-table {
             border-collapse: collapse;
+        }
+
+        .songlist-table tbody {
             width: 100%;
             max-width: 900px;
             table-layout: fixed;
@@ -315,16 +312,14 @@
                 </tr>
             </thead>
             <tbody id="songBody">
-                <!-- Error Message Row -->
+                <!-- Songs will be loaded here via JavaScript -->
+                <!-- Error Message Row - hidden by default, shown when no songs match -->
                 <tr class="error-message" id="errorMessage">
-                    <td colspan="3">
-                        <div style="text-align: center; padding: 20px 0;">
-                            <p id="errorText" style="margin-bottom: 15px; font-size: 16px;">Oops! Looks like Pat doesn't know "<span id="searchTerm"></span>"</p>
-                            <button class="notify-btn" id="notifyBtn">Click to tell him to learn it!</button>
-                        </div>
+                    <td colspan="3" style="text-align: center; padding: 20px;">
+                        <p id="errorText" style="margin: 0 0 15px 0; font-size: 16px;">Oops! Looks like Pat doesn't know "<span id="searchTerm"></span>"</p>
+                        <button class="notify-btn" id="notifyBtn">Click to tell him to learn it!</button>
                     </td>
                 </tr>
-                <!-- Songs will be loaded here via JavaScript -->
             </tbody>
         </table>
     </div>
