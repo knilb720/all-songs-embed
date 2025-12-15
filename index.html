@@ -606,11 +606,9 @@
                 return;
             }
             
-            // Otherwise, prevent page scroll while tbody is scrolling
-            if (this.scrollTop > 0 || !scrollingUp) {
-                e.preventDefault();
-            }
-        }, { passive: false });
+            // Otherwise, allow normal tbody scrolling (don't prevent)
+            // The tbody will handle its own scrolling naturally
+        }, { passive: true });
 
         // Filter button click handlers
         document.querySelectorAll('.filter-btn').forEach(button => {
