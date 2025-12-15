@@ -736,6 +736,10 @@
         searchInput.addEventListener('focus', function() {
             // Only auto-scroll on mobile (screen width < 768px)
             if (window.innerWidth < 768 && !isSearchActive) {
+                // Set scroll position to 0 FIRST to prevent restoration from fighting us
+                scrollPosition = 0;
+                isSearchActive = true;
+                
                 // Simple approach: scroll to top of page
                 const scrollToTop = () => {
                     // Force scroll to top using all available methods
@@ -760,12 +764,6 @@
                 setTimeout(scrollToTop, 200);
                 setTimeout(scrollToTop, 300);
                 setTimeout(scrollToTop, 500);
-                
-                // Lock scroll position after all attempts
-                setTimeout(() => {
-                    isSearchActive = true;
-                    scrollPosition = window.pageYOffset;
-                }, 600);
             }
         });
 
