@@ -59,14 +59,13 @@
         /* Search container */
         .search-container {
             display: flex;
-            gap: 10px;
             justify-content: center;
             margin-bottom: 30px;
             padding: 0 10px;
         }
 
         .search-input {
-            flex: 1;
+            width: 100%;
             max-width: 500px;
             padding: 12px 20px;
             font-size: 16px;
@@ -79,20 +78,6 @@
 
         .search-input::placeholder {
             color: #888888;
-        }
-
-        .search-btn {
-            background-color: #ffffff;
-            color: #000000;
-            border: 2px solid #ffffff;
-            padding: 12px 24px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
         }
 
         /* Error message */
@@ -220,19 +205,9 @@
                 font-size: 12px;
             }
 
-            .search-container {
-                flex-direction: column;
-                margin-bottom: 20px;
-            }
-
             .search-input {
                 max-width: 100%;
                 font-size: 16px;
-            }
-
-            .search-btn {
-                width: 100%;
-                padding: 12px 20px;
             }
 
             .error-message p {
@@ -287,7 +262,6 @@
     <!-- Search Bar -->
     <div class="search-container">
         <input type="text" class="search-input" id="searchInput" placeholder="Search for song">
-        <button class="search-btn" id="searchBtn">Search</button>
     </div>
 
     <!-- Error Message -->
@@ -387,8 +361,8 @@
                                 const maxLen = Math.max(searchWord.length, titleWord.length);
                                 const similarity = 1 - (distance / maxLen);
                                 
-                                // Very lenient threshold - 70% similarity
-                                if (similarity >= 0.7) {
+                                // Stricter threshold - 30% similarity
+                                if (similarity >= 0.3) {
                                     bestScore = Math.min(bestScore, distance);
                                     matchType = 'fuzzy';
                                 }
@@ -405,7 +379,7 @@
                                 const maxLen = Math.max(searchWord.length, artistWord.length);
                                 const similarity = 1 - (distance / maxLen);
                                 
-                                if (similarity >= 0.7) {
+                                if (similarity >= 0.3) {
                                     bestScore = Math.min(bestScore, distance);
                                     matchType = 'fuzzy';
                                 }
@@ -504,26 +478,10 @@
             });
         }
 
-        // Search button click handler
-        document.getElementById('searchBtn').addEventListener('click', function() {
-            currentSearchTerm = document.getElementById('searchInput').value;
-            renderSongs();
-        });
-
-        // Enter key in search input
-        document.getElementById('searchInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                currentSearchTerm = this.value;
-                renderSongs();
-            }
-        });
-
-        // Clear search when input is cleared
+        // Live search - filter as user types
         document.getElementById('searchInput').addEventListener('input', function() {
-            if (this.value === '') {
-                currentSearchTerm = '';
-                renderSongs();
-            }
+            currentSearchTerm = this.value;
+            renderSongs();
         });
 
         // Filter button click handlers
