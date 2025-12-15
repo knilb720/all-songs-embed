@@ -312,16 +312,19 @@
             transform: translate(-50%, -50%);
             background-color: #ffffff;
             color: #000000;
-            padding: 8px 16px;
+            padding: 12px 20px;
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             z-index: 10000;
             text-align: center;
             font-size: 16px;
             font-weight: 600;
+            min-width: 320px;
             max-width: 95%;
-            width: auto;
-            line-height: 1.3;
+            width: 90%;
+            line-height: 1.4;
+            white-space: normal;
+            word-wrap: break-word;
             animation: fadeIn 0.3s ease-in-out;
         }
 
@@ -733,37 +736,36 @@
         searchInput.addEventListener('focus', function() {
             // Only auto-scroll on mobile (screen width < 768px)
             if (window.innerWidth < 768 && !isSearchActive) {
-                // Calculate absolute position of search container from top of page
+                // Simple approach: scroll to top of page
                 const scrollToTop = () => {
-                    // Get the absolute offset from top of document
-                    let element = searchContainer;
-                    let offsetTop = 0;
-                    while (element) {
-                        offsetTop += element.offsetTop;
-                        element = element.offsetParent;
+                    // Force scroll to top using all available methods
+                    window.scrollTo(0, 0);
+                    document.documentElement.scrollTop = 0;
+                    document.body.scrollTop = 0;
+                    window.scroll(0, 0);
+                    
+                    // Also try with options object
+                    try {
+                        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+                    } catch (e) {
+                        // Fallback if scrollTo with options not supported
+                        window.scrollTo(0, 0);
                     }
-                    
-                    // Target position: absolute offset minus desired spacing from top (40px)
-                    const targetPosition = offsetTop - 40;
-                    
-                    // Try all scroll methods (iOS and Android compatible)
-                    window.scrollTo(0, targetPosition);
-                    document.documentElement.scrollTop = targetPosition;
-                    document.body.scrollTop = targetPosition;
-                    window.scrollTo({ top: targetPosition, left: 0, behavior: 'smooth' });
                 };
                 
-                // Multiple attempts with increasing delays (keyboard animation timing)
+                // Multiple attempts to ensure it works (Android keyboard timing)
+                scrollToTop(); // Immediate
+                setTimeout(scrollToTop, 50);
                 setTimeout(scrollToTop, 100);
                 setTimeout(scrollToTop, 200);
                 setTimeout(scrollToTop, 300);
-                setTimeout(scrollToTop, 400);
+                setTimeout(scrollToTop, 500);
                 
                 // Lock scroll position after all attempts
                 setTimeout(() => {
                     isSearchActive = true;
                     scrollPosition = window.pageYOffset;
-                }, 500);
+                }, 600);
             }
         });
 
