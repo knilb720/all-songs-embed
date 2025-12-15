@@ -361,8 +361,8 @@
                                 const maxLen = Math.max(searchWord.length, titleWord.length);
                                 const similarity = 1 - (distance / maxLen);
                                 
-                                // Stricter threshold - 30% similarity
-                                if (similarity >= 0.3) {
+                                // Very strict threshold - 10% similarity
+                                if (similarity >= 0.1) {
                                     bestScore = Math.min(bestScore, distance);
                                     matchType = 'fuzzy';
                                 }
@@ -379,7 +379,7 @@
                                 const maxLen = Math.max(searchWord.length, artistWord.length);
                                 const similarity = 1 - (distance / maxLen);
                                 
-                                if (similarity >= 0.3) {
+                                if (similarity >= 0.1) {
                                     bestScore = Math.min(bestScore, distance);
                                     matchType = 'fuzzy';
                                 }
