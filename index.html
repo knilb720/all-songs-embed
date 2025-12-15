@@ -90,22 +90,16 @@
 
         /* Error message */
         .error-message {
-            display: none;
-            text-align: center;
-            padding: 20px;
-            margin-bottom: 20px;
             background-color: #1a1a1a;
-            border: 2px solid #ffffff;
-            border-radius: 8px;
         }
 
         .error-message.show {
-            display: block;
+            display: table-row;
         }
 
-        .error-message p {
-            margin-bottom: 15px;
-            font-size: 16px;
+        .error-message td {
+            border-top: 2px solid #333333;
+            border-bottom: 2px solid #333333;
         }
 
         .notify-btn {
@@ -272,12 +266,6 @@
         <input type="text" class="search-input" id="searchInput" placeholder="Search for song">
     </div>
 
-    <!-- Error Message -->
-    <div class="error-message" id="errorMessage">
-        <p id="errorText">Oops! Looks like Pat doesn't know "<span id="searchTerm"></span>"</p>
-        <button class="notify-btn" id="notifyBtn">Click to tell him to learn it!</button>
-    </div>
-
     <!-- Song Table -->
     <div class="songlist-wrapper">
         <table class="songlist-table" id="songTable">
@@ -289,6 +277,15 @@
                 </tr>
             </thead>
             <tbody id="songBody">
+                <!-- Error Message Row -->
+                <tr class="error-message" id="errorMessage" style="display: none;">
+                    <td colspan="3">
+                        <div style="text-align: center; padding: 20px 0;">
+                            <p id="errorText" style="margin-bottom: 15px; font-size: 16px;">Oops! Looks like Pat doesn't know "<span id="searchTerm"></span>"</p>
+                            <button class="notify-btn" id="notifyBtn">Click to tell him to learn it!</button>
+                        </div>
+                    </td>
+                </tr>
                 <!-- Songs will be loaded here via JavaScript -->
             </tbody>
         </table>
@@ -330,7 +327,7 @@
             return matrix[len1][len2];
         }
 
-        // Fuzzy search with incredible leniency
+        // Progressive substring search - narrows results with each letter
         function fuzzySearch(searchTerm, songs) {
             if (!searchTerm || searchTerm.trim() === '') {
                 return songs;
@@ -343,65 +340,27 @@
                 const title = song.title.toLowerCase();
                 const artist = song.artist.toLowerCase();
                 
-                // Calculate similarity scores
-                let bestScore = Infinity;
-                let matchType = '';
-
-                // Exact substring match (highest priority)
+                // Check if the search term appears as a substring in title or artist
                 if (title.includes(term) || artist.includes(term)) {
-                    bestScore = 0;
-                    matchType = 'exact';
-                }
-                // Partial word match
-                else {
-                    const titleWords = title.split(/\s+/);
-                    const artistWords = artist.split(/\s+/);
-                    const searchWords = term.split(/\s+/);
-
-                    searchWords.forEach(searchWord => {
-                        // Check title words
-                        titleWords.forEach(titleWord => {
-                            if (titleWord.includes(searchWord) || searchWord.includes(titleWord)) {
-                                bestScore = Math.min(bestScore, 1);
-                                matchType = 'partial';
-                            } else {
-                                const distance = levenshteinDistance(searchWord, titleWord);
-                                const maxLen = Math.max(searchWord.length, titleWord.length);
-                                const similarity = 1 - (distance / maxLen);
-                                
-                                // Very strict threshold - 10% similarity
-                                if (similarity >= 0.1) {
-                                    bestScore = Math.min(bestScore, distance);
-                                    matchType = 'fuzzy';
-                                }
-                            }
-                        });
-
-                        // Check artist words
-                        artistWords.forEach(artistWord => {
-                            if (artistWord.includes(searchWord) || searchWord.includes(artistWord)) {
-                                bestScore = Math.min(bestScore, 1);
-                                matchType = 'partial';
-                            } else {
-                                const distance = levenshteinDistance(searchWord, artistWord);
-                                const maxLen = Math.max(searchWord.length, artistWord.length);
-                                const similarity = 1 - (distance / maxLen);
-                                
-                                if (similarity >= 0.1) {
-                                    bestScore = Math.min(bestScore, distance);
-                                    matchType = 'fuzzy';
-                                }
-                            }
-                        });
-                    });
-                }
-
-                // If we found a match, add to results
-                if (bestScore < Infinity) {
+                    // Prioritize matches at the start of words
+                    const titleStartsWith = title.startsWith(term);
+                    const artistStartsWith = artist.startsWith(term);
+                    const titleWordStart = title.split(/\s+/).some(word => word.startsWith(term));
+                    const artistWordStart = artist.split(/\s+/).some(word => word.startsWith(term));
+                    
+                    let score = 10; // Default score for substring match
+                    
+                    if (titleStartsWith) score = 0; // Best: starts with term
+                    else if (artistStartsWith) score = 1;
+                    else if (titleWordStart) score = 2; // Good: word starts with term
+                    else if (artistWordStart) score = 3;
+                    else if (title.includes(term)) score = 4; // OK: contains term
+                    else if (artist.includes(term)) score = 5;
+                    
                     results.push({
                         song: song,
-                        score: bestScore,
-                        matchType: matchType
+                        score: score,
+                        matchType: 'substring'
                     });
                 }
             });
@@ -433,7 +392,10 @@
         function renderSongs() {
             const tbody = document.getElementById('songBody');
             const errorMessage = document.getElementById('errorMessage');
-            tbody.innerHTML = '';
+            
+            // Clear only song rows, keep error message row
+            const rows = tbody.querySelectorAll('tr:not(.error-message)');
+            rows.forEach(row => row.remove());
 
             // Filter by category first
             let filteredSongs = allSongs;
