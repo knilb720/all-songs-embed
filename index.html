@@ -70,6 +70,19 @@
             justify-content: center;
             margin-bottom: 30px;
             padding: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        /* Sticky search when focused on mobile */
+        .search-container.sticky {
+            position: fixed;
+            top: 3px;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background-color: #000000;
+            margin-bottom: 0;
+            padding: 3px 10px 10px 10px;
         }
 
         .search-input {
@@ -478,6 +491,28 @@
         document.getElementById('searchInput').addEventListener('input', function() {
             currentSearchTerm = this.value;
             renderSongs();
+        });
+
+        // Make search sticky on mobile when focused
+        const searchInput = document.getElementById('searchInput');
+        const searchContainer = document.querySelector('.search-container');
+        
+        searchInput.addEventListener('focus', function() {
+            // Only apply sticky on mobile (screen width < 768px)
+            if (window.innerWidth < 768) {
+                searchContainer.classList.add('sticky');
+                // Hide filter buttons when search is active
+                document.querySelector('.filter-buttons').style.display = 'none';
+                document.querySelector('h1').style.display = 'none';
+            }
+        });
+        
+        searchInput.addEventListener('blur', function() {
+            // Remove sticky when not focused
+            searchContainer.classList.remove('sticky');
+            // Show filter buttons again
+            document.querySelector('.filter-buttons').style.display = 'flex';
+            document.querySelector('h1').style.display = 'block';
         });
 
         // Filter button click handlers
