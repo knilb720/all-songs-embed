@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patrick Boylan's Song List</title>
+    
+    <!-- EmailJS Script -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function(){
+            emailjs.init('X0pllflr_hw5gcmEB');
+        })();
+    </script>
     <style>
         * {
             margin: 0;
@@ -499,19 +507,23 @@
             });
         });
 
-        // Notify button - PLACEHOLDER FOR EMAILJS
+        // Notify button - EmailJS Integration
         document.getElementById('notifyBtn').addEventListener('click', function() {
             const searchTerm = document.getElementById('searchTerm').textContent;
             
-            // TODO: Replace this with EmailJS integration
-            // For now, show alert
-            alert('EmailJS will send: "Someone requested "' + searchTerm + '" at TSG and you don\'t know it! Shame! Learn it!" to pdboyla1@gmail.com');
-            
-            // EMAILJS CODE WILL GO HERE:
-            // emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
-            //     song_request: searchTerm,
-            //     to_email: 'pdboyla1@gmail.com'
-            // });
+            // Send email via EmailJS
+            emailjs.send('service_aziu0jh', 'template_fkk6b0b', {
+                song_request: searchTerm
+            }).then(
+                function(response) {
+                    alert('Thanks! Pat has been notified to learn "' + searchTerm + '"!');
+                    console.log('Email sent successfully!', response.status, response.text);
+                },
+                function(error) {
+                    alert('Oops! Something went wrong. Please try again.');
+                    console.log('Email failed to send:', error);
+                }
+            );
         });
 
         // Load songs on page load
