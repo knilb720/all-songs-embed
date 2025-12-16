@@ -232,6 +232,39 @@
             white-space: nowrap;
         }
 
+        /* Icon buttons for Android */
+        .icon-buttons-cell {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 2px solid #ffffff;
+            background-color: #000000;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            padding: 0;
+        }
+
+        .icon-btn img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .cash-btn {
+            font-size: 20px;
+            line-height: 1;
+        }
+
         /* Highlight search results */
         .highlight {
             background-color: #333333;
@@ -279,17 +312,17 @@
             /* Adjust column widths for mobile */
             .songlist-table th:nth-child(1),
             .songlist-table td:nth-child(1) {
-                width: 35%;
+                width: 32%;
             }
 
             .songlist-table th:nth-child(2),
             .songlist-table td:nth-child(2) {
-                width: 40%;
+                width: 38%;
             }
 
             .songlist-table th:nth-child(3),
             .songlist-table td:nth-child(3) {
-                width: 25%;
+                width: 30%;
             }
 
             .request-btn {
@@ -761,35 +794,50 @@
                 artistCell.textContent = song.artist;
                 
                 const requestCell = document.createElement('td');
-                const requestLink = document.createElement('a');
                 
-                // Detect Android vs iOS for different Venmo links
+                // Detect Android vs iOS for different button layouts
                 const isAndroid = /Android/.test(navigator.userAgent);
                 const venmoNote = `Song Request: ${song.title} - ${song.artist}`;
                 
                 if (isAndroid) {
-                    // Android: Use Venmo.me link to avoid duplicate recipient issue
-                    requestLink.href = `https://venmo.com/patrickTSG?txn=pay&amount=5&note=${encodeURIComponent(venmoNote)}`;
+                    // Android: Show two icon buttons (Venmo + Cash)
+                    requestCell.className = 'icon-buttons-cell';
+                    
+                    // Venmo icon button
+                    const venmoBtn = document.createElement('a');
+                    venmoBtn.href = `https://venmo.com/patrickTSG?txn=pay&amount=5&note=${encodeURIComponent(venmoNote)}`;
+                    venmoBtn.className = 'icon-btn venmo-btn';
+                    venmoBtn.innerHTML = '<img src="venmo-icon.jpg" alt="Venmo" />';
+                    
+                    // Cash icon button
+                    const cashBtn = document.createElement('button');
+                    cashBtn.className = 'icon-btn cash-btn';
+                    cashBtn.textContent = '💵';
+                    cashBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        showNotification(`No Venmo?<br>Bring cash to the piano<br>to request <strong>${song.title}</strong>`, 4000);
+                    });
+                    
+                    requestCell.appendChild(venmoBtn);
+                    requestCell.appendChild(cashBtn);
                 } else {
-                    // iOS: Use deep link
+                    // iOS: Single "Request" button
+                    const requestLink = document.createElement('a');
                     requestLink.href = `venmo://paycharge?txn=pay&recipients=patrickTSG&amount=5&note=${encodeURIComponent(venmoNote)}`;
+                    requestLink.className = 'request-btn';
+                    requestLink.textContent = 'Request';
+                    
+                    // Add click handler to detect if Venmo isn't installed
+                    requestLink.addEventListener('click', function(e) {
+                        setTimeout(() => {
+                            if (document.visibilityState === 'visible') {
+                                showNotification(`No Venmo?<br>Bring cash to the piano<br>to request <strong>${song.title}</strong>`, 4000);
+                            }
+                        }, 1000);
+                    });
+                    
+                    requestCell.appendChild(requestLink);
                 }
-                
-                requestLink.className = 'request-btn';
-                requestLink.textContent = 'Request';
-                
-                // Add click handler to detect if Venmo isn't installed
-                requestLink.addEventListener('click', function(e) {
-                    // Set a timeout to check if the app opened
-                    setTimeout(() => {
-                        // If still visible after attempting to open Venmo, show fallback
-                        if (document.visibilityState === 'visible') {
-                            showNotification(`No Venmo?<br>Bring cash to the piano<br>to request <strong>${song.title}</strong>`, 4000);
-                        }
-                    }, 1000);
-                });
-                
-                requestCell.appendChild(requestLink);
                 
                 row.appendChild(titleCell);
                 row.appendChild(artistCell);
