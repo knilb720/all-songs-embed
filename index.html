@@ -753,28 +753,48 @@
             const rows = tbody.querySelectorAll('tr:not(.error-message):not(.spacer-row)');
             rows.forEach(row => row.remove());
 
-            // If searching, search ALL songs (ignore filter)
-            // If not searching, apply filter
+            // Special handling for Holiday filter
             let filteredSongs = allSongs;
             
             if (currentSearchTerm) {
-                // Search all songs, ignoring current filter
-                filteredSongs = fuzzySearch(currentSearchTerm, allSongs);
+                // SPECIAL CASE: If in Holiday filter, search ONLY holiday songs
+                if (currentFilter === 'holiday') {
+                    const holidaySongs = allSongs.filter(song => 
+                        song.tags && song.tags.includes('holiday')
+                    );
+                    filteredSongs = fuzzySearch(currentSearchTerm, holidaySongs);
+                } else {
+                    // For all other filters: search ALL songs EXCEPT holiday songs
+                    const nonHolidaySongs = allSongs.filter(song => 
+                        !song.tags || !song.tags.includes('holiday')
+                    );
+                    filteredSongs = fuzzySearch(currentSearchTerm, nonHolidaySongs);
+                }
             } else if (currentFilter !== 'all') {
-                // No search term, apply filter
+                // No search term, apply filter normally
                 filteredSongs = allSongs.filter(song => 
                     song.tags && song.tags.includes(currentFilter)
+                );
+            } else {
+                // No search, "All" filter: show all songs EXCEPT holiday
+                filteredSongs = allSongs.filter(song => 
+                    !song.tags || !song.tags.includes('holiday')
                 );
             }
 
             // Show error if no results
             if (currentSearchTerm && filteredSongs.length === 0) {
                 errorMessage.classList.add('show');
-                document.getElementById('searchTerm').textContent = currentSearchTerm;
                 
-                // Don't show filter context anymore since we search all songs
-                const filterContext = document.getElementById('filterContext');
-                filterContext.textContent = '';
+                // Different error message for Holiday filter
+                const errorText = document.getElementById('errorText');
+                const searchTermElement = document.getElementById('searchTerm');
+                
+                if (currentFilter === 'holiday') {
+                    errorText.innerHTML = `Pat doesn't know the holiday song<br><strong>${currentSearchTerm}</strong>`;
+                } else {
+                    errorText.innerHTML = `Pat doesn't know <strong id="searchTerm">${currentSearchTerm}</strong>`;
+                }
             } else {
                 errorMessage.classList.remove('show');
             }
