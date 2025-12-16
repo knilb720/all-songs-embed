@@ -774,9 +774,9 @@
                     filteredSongs = fuzzySearch(currentSearchTerm, nonHolidaySongs);
                 }
             } else if (currentFilter !== 'all') {
-                // No search term, apply filter normally
+                // No search term, apply filter normally (case-insensitive)
                 filteredSongs = allSongs.filter(song => 
-                    song.tags && song.tags.includes(currentFilter)
+                    song.tags && song.tags.some(tag => tag.toLowerCase() === currentFilter.toLowerCase())
                 );
             }
             // else: No search, "All" filter: show all songs (allSongs already set)
