@@ -757,21 +757,34 @@
             let filteredSongs = allSongs;
             
             if (currentSearchTerm) {
+                console.log('🔍 SEARCH:', currentSearchTerm);
+                console.log('🎯 CURRENT FILTER:', currentFilter);
+                console.log('📊 ALL SONGS COUNT:', allSongs.length);
+                
                 // SPECIAL CASE: If in Holiday filter, search ONLY holiday songs
                 if (currentFilter === 'holiday') {
+                    console.log('🎄 IN HOLIDAY FILTER');
                     const holidaySongs = allSongs.filter(song => 
                         song.tags && song.tags.includes('holiday')
                     );
+                    console.log('🎄 Holiday songs available:', holidaySongs.length);
+                    console.log('🎄 Holiday song titles:', holidaySongs.map(s => s.title));
                     filteredSongs = fuzzySearch(currentSearchTerm, holidaySongs);
+                    console.log('🎄 FINAL RESULTS:', filteredSongs.length, filteredSongs.map(s => s.title));
                 } else if (currentFilter === 'all') {
+                    console.log('🌍 IN ALL FILTER');
                     // "All" filter: search ALL songs INCLUDING holiday
                     filteredSongs = fuzzySearch(currentSearchTerm, allSongs);
+                    console.log('🌍 FINAL RESULTS:', filteredSongs.length);
                 } else {
+                    console.log('🎸 IN OTHER FILTER:', currentFilter);
                     // Other filters (Country, Rock, etc): search ALL songs EXCEPT holiday
                     const nonHolidaySongs = allSongs.filter(song => 
                         !song.tags || !song.tags.includes('holiday')
                     );
+                    console.log('🎸 Non-holiday songs available:', nonHolidaySongs.length);
                     filteredSongs = fuzzySearch(currentSearchTerm, nonHolidaySongs);
+                    console.log('🎸 FINAL RESULTS:', filteredSongs.length, filteredSongs.map(s => s.title));
                 }
             } else if (currentFilter !== 'all') {
                 // No search term, apply filter normally
