@@ -1,19 +1,49 @@
 [
  {
+    "title": "Whinter Wonderland",
+    "artist": "Misc. Christmas",
+    "tags": [
+      "Holiday"
+    ]
+ },
+ {
+    "title": "Last Christmas",
+    "artist": "Wham!",
+    "tags": [
+      "Holiday"
+    ]
+ },
+ {
+    "title": "Golden",
+    "artist": "Kpop Demon Hunter",
+    "tags": [
+      "2000-Present",
+      "Musicals"
+    ]
+ },
+ {
+    "title": "Lay All Your Love On Me",
+    "artist": "Abba",
+    "tags": [
+      "60's-80's",
+      "Piano Bar"
+    ]
+ },
+ {
+    "title": "The Chain",
+    "artist": "Fleetwood Mac",
+    "tags": [
+      "60's-80's",
+      "Piano Bar"
+    ]
+ },
+ {
     "title": "Somebody to Love",
     "artist": "Queen",
     "tags": [
       "60's-80's",
       "Piano Bar"
-  ]
-},
-{
-    "title": "Somebody to Love",
-    "artist": "Queen",
-    "tags": [
-      "60's-80's",
-      "Piano Bar"
-   ]  
+    ]  
  },
  {
     "title": "Summertime Sadness",
