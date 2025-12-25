@@ -1,10 +1,41 @@
 [
+ {
+    "title": "Somebody to Love",
+    "artist": "Queen",
+    "tags": [
+      "60's-80's",
+      "Piano Bar"
+  ]
+},
+{
+    "title": "Somebody to Love",
+    "artist": "Queen",
+    "tags": [
+      "60's-80's",
+      "Piano Bar"
+   ]  
+ },
+ {
+    "title": "Summertime Sadness",
+    "artist": "Lana Del Ray",
+    "tags": [
+      "2000-Present"
+    ]
+  },
+  {
+    "title": "Holding Out for a Hero (aka I Need a Hero)",
+    "artist": "Bonnie Tyler",
+    "tags": [
+      "60's-80's",
+      "Piano Bar"
+    ]
+  },
   {
     "title": "One Last Time",
     "artist": "Ariana Grande",
     "tags": [
       "2000-Present",
-      "piano bar"
+      "Piano Bar"
     ]
   },
   {
